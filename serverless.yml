@@ -7,6 +7,8 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: ap-northeast-1
+  deploymentBucket:
+    name: '${self:custom.deploymentBucketName}'
 
 functions:
   api:
@@ -15,3 +17,16 @@ functions:
       - httpApi:
           path: /
           method: get
+
+plugins:
+  - serverless-layers
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+
+custom:
+  deploymentBucketName: 'jonas-notion-support-node-modules-layers'
+  serverless-layers:
+    packageManager: yarn
