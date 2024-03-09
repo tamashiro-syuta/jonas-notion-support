@@ -5,7 +5,7 @@ frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs18.x
   region: ap-northeast-1
   deploymentBucket:
     name: '${self:custom.deploymentBucketName}'
