@@ -17,6 +17,24 @@ functions:
       - httpApi:
           path: /
           method: get
+  getTableInfo:
+    handler: src/getTableInfo.handler
+    events:
+      - httpApi:
+          path: /getTableInfo
+          method: get
+    environment:
+      NOTION_TOKEN: ${ssm:JONAS_NOTION_SUPPORT_NOTION_TOKEN}
+      NOTION_DATABASE_ID: ${ssm:JONAS_NOTION_SUPPORT_NOTION_DATABASE_ID}
+  update:
+    handler: src/update.handler
+    events:
+      - httpApi:
+          path: /update
+          method: patch
+    environment:
+      NOTION_TOKEN: ${ssm:JONAS_NOTION_SUPPORT_NOTION_TOKEN}
+      NOTION_DATABASE_ID: ${ssm:JONAS_NOTION_SUPPORT_NOTION_DATABASE_ID}
 
 plugins:
   - serverless-layers
