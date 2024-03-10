@@ -20,26 +20,15 @@ async function getGenresBudget(client, genre) {
     },
   });
 
-  //ページ情報
-  console.log(budget);
-  console.log('---------------------------------------------------------------');
-  //プロパティ情報
-  console.log(budget.results[0].properties);
-  console.log('---------------------------------------------------------------');
-  console.log(budget.results[0].properties['支出額']);
-  console.log('---------------------------------------------------------------');
-  console.log(budget.results[0].properties['支出額'].number);
-  console.log('---------------------------------------------------------------');
+  // NOTE: この時点でレコードは1つしかないので、初めの値を取得
+  const record = budget.results[0];
+  if (!record?.properties) throw new Error("選択した項目が見つかりませんでした");
 
-  // TODO: 後でエラーハンドリングの処理を追加
-
-  return budget.results[0];
+  return record;
 }
 
 // NOTE: レコードの単体データが入る
 async function updateBudget(client, record, addAmount = 0) {
-  const assetRecordId = response.results[0].id;
-  const assetRecordsAmount = response.results[0].properties['支出額']?.number || 0;
   const updateProperty = "支出額";
   const assetRecordsAmount = record.properties[updateProperty]?.number || 0;
 
@@ -63,9 +52,27 @@ module.exports.handler = async (event) => {
     auth: process.env.NOTION_TOKEN,
   });
 
-  const testGenre = "資産形成";
-  const budget = await getGenresBudget(notion, testGenre);
-  await updateBudget(notion, budget, 100)
+  const genre = event.body?.genre;
+  const amount = event.body?.amount;
+  if (!genre) return { statusCode: 400, body: { message: "項目が選択されていません" } };
+  if (!amount) return { statusCode: 400, body: { message: "金額が選択されていません" } };
+  if (isNaN(amount)) return { statusCode: 400, body: { message: "金額が数字ではない値が検出されました" } };
+
+  try {
+    const budget = await getGenresBudget(notion, genre);
+    await updateBudget(notion, budget, amount)
+  } catch (error) {
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify(
+        {
+          message: "処理が失敗しました",
+          error: error.message,
+        }
+      ),
+    };
+  }
 
   return {
     statusCode: 200,
@@ -73,9 +80,7 @@ module.exports.handler = async (event) => {
       {
         message: "getTableInfo",
         input: event,
-      },
-      null,
-      2
+      }
     ),
   };
 };
